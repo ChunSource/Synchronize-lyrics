@@ -1,9 +1,9 @@
-#include "pch.h"
-#include "ProcessLRC.h"
-
-
+#include "processlrc.h"
+#include <string.h>
+#include <windows.h>
 ProcessLRC::ProcessLRC()
 {
+    
 }
 
 
@@ -13,7 +13,7 @@ ProcessLRC::~ProcessLRC()
 
 vector<string> ProcessLRC::LoadLRC(string fileName)
 {
-	//Ã¿´ÎÔØÈëÖ®Ç°ÏÈ°ÑÉÏ´ÎµÄÊı¾İÇå¿Õ
+	//æ¯æ¬¡è½½å…¥ä¹‹å‰å…ˆæŠŠä¸Šæ¬¡çš„æ•°æ®æ¸…ç©º
 	currentLrcFileName = fileName;
 	ListLrcBody.clear();
 	MapTime.clear();
@@ -25,15 +25,17 @@ vector<string> ProcessLRC::LoadLRC(string fileName)
 	file.open(fileName, ios::in);
 	if (!file)
 	{
+        int nmum = GetLastError();
+        char *str = strerror(errno);
 		return vector<string>();
 	}
 
-	//¶ÁÈ¡ÎÄ¼ş´óĞ¡£¬ÉêÇëÏàµ±ÄÚ´æ
+	//è¯»å–æ–‡ä»¶å¤§å°ï¼Œç”³è¯·ç›¸å½“å†…å­˜
 	int fileSize = GetFileSize(fileName);
 	char *buffer = new char[fileSize];
 
 	file.read(buffer, fileSize);
-	string lrc(buffer, fileSize);//½«Êı¾İ×ª´æµ½string
+	string lrc(buffer, fileSize);//å°†æ•°æ®è½¬å­˜åˆ°string
 
 	delete buffer;
 	buffer = nullptr;
@@ -41,22 +43,22 @@ vector<string> ProcessLRC::LoadLRC(string fileName)
 	vector<string> vlist;
 	lrc = replace_all_distinct(lrc, "\r", "");
 	lrc = replace_all_distinct(lrc, "?", "");
-	//lrc.replace();  //½«Ã¿ĞĞµÄ¸è´Ê¶ÁÈ¡
+	//lrc.replace();  //å°†æ¯è¡Œçš„æ­Œè¯è¯»å–
 	vector<string> list = split(lrc, "\n");
 
 	for (int i = 0; i < list.size(); i++)
 	{
-		//´¦ÀíÃ¿Ò»ĞĞµÄÊı¾İ
+		//å¤„ç†æ¯ä¸€è¡Œçš„æ•°æ®
 		string str = list.at(i);
 		//	showLog( str);
 		string app = str.substr(str.find("]") + 1, str.length() - str.find("]") - 1);
 		//	showLog("geci  " + app);
 		ListLrcBody.push_back(app);
 
-		string tp = str.substr(1, str.find("]") - 1);//¶ÁÈ¡Ê±¼ä²¿·Ö
+		string tp = str.substr(1, str.find("]") - 1);//è¯»å–æ—¶é—´éƒ¨åˆ†
 		tp = replace_all_distinct(tp, "[", "");
 
-		int sec = convert_str_to_tm(tp.data());  //×ª»»³ÉÃëÊı
+		int sec = convert_str_to_tm(tp.data());  //è½¬æ¢æˆç§’æ•°
 		int min = sec / 60;
 
 		map<int, map<int, string>>::iterator it = MapTime.find(min);
@@ -64,12 +66,12 @@ vector<string> ProcessLRC::LoadLRC(string fileName)
 
 		if (it != MapTime.end())
 		{
-			//±íÊ¾Ö®Ç°ÒÑ¾­ÓĞÁË
+			//è¡¨ç¤ºä¹‹å‰å·²ç»æœ‰äº†
 			map<int, string> &sMap = it->second;
 			sMap.insert(pair<int, string>(sec, app));
 		}
 		else
-		{  //Ö®Ç°Ã»ÓĞ´´½¨¹ı
+		{  //ä¹‹å‰æ²¡æœ‰åˆ›å»ºè¿‡
 			map<int, string> sMap;
 			sMap.insert(pair<int, string>(sec, app));
 			MapTime.insert(map<int, map<int, string>>::value_type(min, sMap));
@@ -94,7 +96,7 @@ string ProcessLRC::refreshLrc(int pos, int flage)
 		return string();
 	}
 	int sec = pos / 60;
-	map<int, map<int, string>>::iterator it = MapTime.find(sec); //ÏÈ°´ÃëË÷Òı£¬ÔÙ°´ºÁÃë±È½Ï
+	map<int, map<int, string>>::iterator it = MapTime.find(sec); //å…ˆæŒ‰ç§’ç´¢å¼•ï¼Œå†æŒ‰æ¯«ç§’æ¯”è¾ƒ
 
 	while (it != MapTime.end())
 	{
@@ -108,20 +110,20 @@ string ProcessLRC::refreshLrc(int pos, int flage)
 				asit++;
 				if (asit == sMap.end())
 				{
-					//µ±Ç°ÏîÊÇ×îºóÒ»¸ö£¬ÊÇ×îºÏÊÊµÄÁË
+					//å½“å‰é¡¹æ˜¯æœ€åä¸€ä¸ªï¼Œæ˜¯æœ€åˆé€‚çš„äº†
 
 					return sit->second;
 				}
 				else if (pos < asit->first)
 				{
-					//µ±Ç°Ïî²»ÊÇ×îºóÒ»¸ö£¬µ«ÊÇÊÇ×îºÏÊÊµÄ
+					//å½“å‰é¡¹ä¸æ˜¯æœ€åä¸€ä¸ªï¼Œä½†æ˜¯æ˜¯æœ€åˆé€‚çš„
 					return sit->second;
 				}
 			}
 			else if (sit == sMap.begin())
 			{
 
-				//ºóÃæµÄ¸ü¼Ó²»ºÏÊÊ
+				//åé¢çš„æ›´åŠ ä¸åˆé€‚
 				return sit->second;
 			}
 
@@ -153,7 +155,7 @@ size_t ProcessLRC::GetFileSize(const std::string & file_name)
 	in.seekg(0, std::ios::end);
 	size_t size = in.tellg();
 	in.close();
-	return size; //µ¥Î»ÊÇ£ºbyte
+	return size; //å•ä½æ˜¯ï¼šbyte
 }
 
 vector<string> ProcessLRC::split(const std::string& input, const std::string key)
@@ -187,5 +189,5 @@ int ProcessLRC::convert_str_to_tm(const char * str_time)
 
 	s += atoi(min.data()) * 60;
 	s += atoi(sec.data());
-	return s;//28800ÊÇÒ»¸öÆ«²î¡£¡£¼ÓÉÏÕâ¸ö¡£¡£¸ÕºÃµÈÓÚPHPµÄstrtotime
+	return s;//28800æ˜¯ä¸€ä¸ªåå·®ã€‚ã€‚åŠ ä¸Šè¿™ä¸ªã€‚ã€‚åˆšå¥½ç­‰äºPHPçš„strtotime
 }

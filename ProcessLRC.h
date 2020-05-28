@@ -1,4 +1,7 @@
-#pragma once
+#ifndef PROCESSLRC_H
+#define PROCESSLRC_H
+
+
 #include <iostream>
 #include <list>
 #include <map>
@@ -22,9 +25,9 @@ public:
 	void showLog(string log);
 	void showLog(int log);
 private:
-	string       currentLrcFileName;  //¼ÇÂ¼¸è´ÊÎÄ¼ş
-	vector<string>   ListLrcBody;  //¼ÇÂ¼Ã¿ĞĞµÄ¸è´Ê
-	map<int, map<int, string>>  MapTime;   //¼ÇÂ¼Ã¿ĞĞµÄÊ±¼ä
+	string       currentLrcFileName;  //è®°å½•æ­Œè¯æ–‡ä»¶
+	vector<string>   ListLrcBody;  //è®°å½•æ¯è¡Œçš„æ­Œè¯
+	map<int, map<int, string>>  MapTime;   //è®°å½•æ¯è¡Œçš„æ—¶é—´
 	int		lrcPosIndex = 0;
 	int       lrcLastPosIndex = 0;
 	int		lrcLastMediaPos = 0;
@@ -38,3 +41,5 @@ private:
 	int convert_str_to_tm(const char * str_time);
 };
 
+
+#endif // PROCESSLRC_H
